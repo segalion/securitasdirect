@@ -1,0 +1,74 @@
+#!/bin/bash
+# This is a prototipe command-line tool to interact with Verisure Alarm
+# service in Spain (maybe France?). Has been implemented with reverse
+# engineering over this web services (as browser do).
+#
+# Change NICK and PASSWD with your web credentials
+# You can get state (status), arm (day, night, house), disarm (unlock)
+# and take photos (photo_request)
+#
+# This code is under MIT licence by segalion at gmail. Use at your own risk.
+# release 1.0 (25/09/2018)
+
+NICK="user@example.com"
+PASSWD="xxxx"
+
+HOST="https://customers.securitasdirect.es"
+COOKIE=".securitas.cookie"
+CURL="curl -sL -m 5 -c $COOKIE -b $COOKIE $HOST"
+between () {
+  echo $tmp | grep -o -P '(?<='"$1"').*(?='"$2"')'
+}
+
+case $1 in
+  status|unlock|day|night|house) option="panel/$1";;
+  photo_request) option=$1;;
+  *)
+    echo "$0 [status(default)|unlock|day|night|house|photo_request]" >&2
+    option="panel/status";;
+esac
+# echo option=$option
+echo -n .>&2
+
+tmp=$($CURL/es/installations/status?filter=4)
+# inst=$(echo $tmp | grep -o -P '(?<= href="/es/installations/).*(?=/manage/edit">)')
+inst=$( between ' href="/es/installations/' '/manage/edit">' )
+
+if [ -z "$inst" ]; then
+  token=$( between 'authenticity_token" name="csrf-param" /> <meta content="' '" name="csrf-token"' )
+  # csrf_token=$(echo $tmp | grep -o -P '(?<=authenticity_token" name="csrf-param" /> <meta content=").*(?=" name="csrf-
+token")')
+  # echo csrf_token=$csrf_token
+  echo -n _>&2
+  tmp=$($CURL/es/login/es --data "verisure_rsi_login[nick]=$NICK&verisure_rsi_login[passwd]=$PASSWD&authenticity_token=$
+token&button=&utf8=✓")
+  inst=$(echo $tmp | grep -o -P '(?<= href="/es/installations/).*(?=/manage/edit">)')
+fi
+# echo -n [$inst]
+tmp=$($CURL/es/installations/$inst/$option)
+# token=`echo $tmp | grep -o -P '(?<=name="authenticity_token" type="hidden" value=").*(?=" /></div>)'`
+token=$( between 'name="authenticity_token" type="hidden" value="' '" /></div>' )
+# echo $token
+echo -n .>&2
+for i in {1..3}; do
+  tmp=$($CURL/es/installations/$inst/$option --data "authenticity_token=$token")
+  echo -n [>&2
+  # {"job_id":"f50ff66cbf1ae2b69407eb38ccb65000"}
+  job_id=`echo $tmp | grep -o -P '(?<={"job_id":").*(?="})'`
+  #echo job_id=$job_id
+  if [ -n "$job_id" ]; then
+    for i in {1..9}; do
+      echo -n $i>&2
+      tmp=$($CURL/es/remote/job_status/$job_id)
+      #state=`echo $tmp | grep -o -P '(?<="message":{"status":0,"message":").*(?="}})'`
+      message=`echo $tmp | grep -o -P '(?<=,"message":").*(?="}})'`
+      if [ -n "$message" ]; then
+        echo ]>&2
+        echo $message
+        break
+      fi
+      sleep 2.5
+    done
+    break
+  fi
+done
