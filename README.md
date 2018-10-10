@@ -30,6 +30,7 @@ REQUIREMENTS:
 - internet connection
 (most linux distribution has all this included).
 
+
 NOTES:
 This project has no relation with Securitas Direct / Verisure (unofficial).
 
