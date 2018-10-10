@@ -5,7 +5,12 @@ Bash script command_line tool to interact with Securitas Direct (AKA Verisure Sp
 2. make it executable (chmod +x securitas)
 3. edit and change NICK and PASSWD (nano securitas)
 4. try execute (./securitas)
-5. Call it from your favorite Home Automation tool (note tha inputs and outputs has been changed to be compatible with Home Assistant Alarm Component)
+5. Call it from your favorite Home Automation tool (note that inputs and outputs has been changed to be compatible with Home Assistant Alarm Component)
+
+You can use it to automate wherever you want:
+- When nobody on home > securitas armed_away 
+- When all in home > securitas armed_home
+- When someone enter home > securitas disarmed
 
 EXAMPLES:
 
@@ -41,11 +46,12 @@ EXAMPLES:
 
 
 REQUIREMENTS:
-- bash, grep, awk, head
+- bash, grep, awk, head (most linux distribution has all this included)
 - curl (maybe you need make "sudo apt-get install curl")
 - internet connection
-(most linux distribution has all this included).
-
+Its supposed to run on Android with TERMUX, so you can easyly make an automation like:
+- When connect to mywifi > securitas disarmed
+- When disconnect from mywifi > securitas armed_away
 
 NOTES:
 
