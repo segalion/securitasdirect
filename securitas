@@ -8,67 +8,115 @@
 # and take photos (photo_request)
 #
 # This code is under MIT licence by segalion at gmail. Use at your own risk.
-# release 1.0 (25/09/2018)
+# release 2.0 (03/10/2018)
 
 NICK="user@example.com"
-PASSWD="xxxx"
+PASSWD="change4yourpasswd"
 
 HOST="https://customers.securitasdirect.es"
+INSTALL="es/installations"
 COOKIE=".securitas.cookie"
-CURL="curl -sL -m 5 -c $COOKIE -b $COOKIE $HOST"
+FILEOUT="securitas.log"
+CURL="curl -sL -m 10 -c $COOKIE -b $COOKIE"
 between () {
-  echo $tmp | grep -o -P '(?<='"$1"').*(?='"$2"')'
+  echo $tmp | grep -o -P '(?<='"$1"').*?(?='"$2"')'
+}
+eprint () {
+  echo -en "\r                                      \r$*">&2
+}
+print () {
+  eprint ""; echo -e "$*"
 }
 
+cd "${0%/*}"
+
 case $1 in
-  status|unlock|day|night|house) option="panel/$1";;
-  photo_request) option=$1;;
-  *)
-    echo "$0 [status(default)|unlock|day|night|house|photo_request]" >&2
-    option="panel/status";;
+  "") option="";;
+  status|unlock|day|night|house|log) option="panel/$1";;
+  armed_away) option="panel/house";;
+  armed_home) option="panel/day";;
+  armed_night) option="panel/night";;
+  disarmed) option="panel/unlock";;
+  photo_request) option="";;
+  *) eprint "$0 [status|disarmed|armed_away|armed_home|armed_ningt|photo_request|log]"; exit -1;;
 esac
-# echo option=$option
-echo -n .>&2
 
-tmp=$($CURL/es/installations/status?filter=4)
-# inst=$(echo $tmp | grep -o -P '(?<= href="/es/installations/).*(?=/manage/edit">)')
-inst=$( between ' href="/es/installations/' '/manage/edit">' )
+eprint "connecting"
+# tmp=$($CURL $HOST/$INSTALL/status?filter=1)
 
-if [ -z "$inst" ]; then
-  token=$( between 'authenticity_token" name="csrf-param" /> <meta content="' '" name="csrf-token"' )
-  # csrf_token=$(echo $tmp | grep -o -P '(?<=authenticity_token" name="csrf-param" /> <meta content=").*(?=" name="csrf-
-token")')
-  # echo csrf_token=$csrf_token
-  echo -n _>&2
-  tmp=$($CURL/es/login/es --data "verisure_rsi_login[nick]=$NICK&verisure_rsi_login[passwd]=$PASSWD&authenticity_token=$
-token&button=&utf8=✓")
-  inst=$(echo $tmp | grep -o -P '(?<= href="/es/installations/).*(?=/manage/edit">)')
-fi
-# echo -n [$inst]
-tmp=$($CURL/es/installations/$inst/$option)
-# token=`echo $tmp | grep -o -P '(?<=name="authenticity_token" type="hidden" value=").*(?=" /></div>)'`
-token=$( between 'name="authenticity_token" type="hidden" value="' '" /></div>' )
-# echo $token
-echo -n .>&2
-for i in {1..3}; do
-  tmp=$($CURL/es/installations/$inst/$option --data "authenticity_token=$token")
-  echo -n [>&2
-  # {"job_id":"f50ff66cbf1ae2b69407eb38ccb65000"}
-  job_id=`echo $tmp | grep -o -P '(?<={"job_id":").*(?="})'`
-  #echo job_id=$job_id
-  if [ -n "$job_id" ]; then
-    for i in {1..9}; do
-      echo -n $i>&2
-      tmp=$($CURL/es/remote/job_status/$job_id)
-      #state=`echo $tmp | grep -o -P '(?<="message":{"status":0,"message":").*(?="}})'`
-      message=`echo $tmp | grep -o -P '(?<=,"message":").*(?="}})'`
-      if [ -n "$message" ]; then
-        echo ]>&2
-        echo $message
-        break
-      fi
-      sleep 2.5
-    done
+for i in {0..2}; do
+  tmp=$($CURL -i "$HOST/$INSTALL/status?filter=0&download=1")
+  inst=$( between 'Content-Disposition: attachment; filename="file' '.csv"')
+  if [ -z "$inst" ]; then
+    token=$( between 'authenticity_token" name="csrf-param" /> <meta content="' '" name="csrf-token"' )
+    eprint "login.$i"
+    sleep $i
+    if [ -z "$token" ]; then exit -1;fi
+    tmp=$($CURL $HOST/es/login/es -K- <<< "-d \"verisure_rsi_login[nick]=$NICK&verisure_rsi_login[passwd]=$PASSWD&authenticity_token=$token&button=&utf8=\&#x2713;\" -e \"$HOST/\"")
+  else
+    eprint "inst:$inst"
+    out=$(echo -e "$tmp" | awk -F ";" '($1 ~ /^[0-9]/) {print $0}' )
+    echo "$out" > $FILEOUT
     break
   fi
 done
+if [ -z "$inst" ]; then rm $COOKIE; exit -2; fi
+if [ "$option" = "panel/log" ]; then eprint ""; head -10 $FILEOUT; exit; fi
+if [ -z "$option" ]; then
+  # PARSE CSV
+  echo "$out" | while IFS= read -r line; do
+    #SPLIT ITEMS
+    IFS=';' read -a w <<<$line
+    case ${w[1]} in
+      Cerrar|Conectado) state="armed_away";;
+      "Armado dÃ­a"|"Cerrar dÃ­a") state="armed_home";;
+      "Armado noche"|"Cerrar noche") state="armed_night";;
+      "Sabotaje/manipulaciÃ³n"|Alarma) state="triggered";;
+      Desconectado|Abrir) state="disarmed";;
+      #"Error procesando conexiÃ³n de alarma"|"PeticiÃ³n de foto"|"Comprobacion de estado") state="";;
+    esac
+    if [ -n "$state" ]; then
+      json='{"last_triggered": "'${w[0]}'", "state": "'$state'", "changed_by": "'${w[4]}${w[5]}'" }'
+      print $json
+      break
+    fi
+  done
+  exit
+fi
+
+tmp=$($CURL $HOST/$INSTALL/$inst/$option)
+token=$( between 'name="authenticity_token" type="hidden" value="' '" /></div>' )
+for i in {0..2}; do
+  eprint "$i.$option"
+  sleep $i
+  tmp=$($CURL $HOST/$INSTALL/$inst/$option -d "utf8=\&#x2713;" -d "authenticity_token=$token")
+  # token=$( between 'name="authenticity_token" type="hidden" value="' '" /></div>' )
+  # job_id=`echo $tmp | grep -o -P '(?<={"job_id":").*(?="})'`
+  job_id=$( between '{"job_id":"' '"}' )
+  if [ -n "$job_id" ]; then break;fi
+done
+if [ -n "$job_id" ]; then
+  for j in {0..6}; do
+    eprint "$i.$option(w:$t.5)"
+    t=$((3-$j))
+    sleep ${t#-}.5
+    tmp=$($CURL $HOST/es/remote/job_status/$job_id)
+    #state=`echo $tmp | grep -o -P '(?<="message":{"status":0,"message":").*(?="}})'`
+    message=`echo $tmp | grep -o -P '(?<=,"message":").*(?="})'`
+    if [ -n "$message" ]; then break; fi
+  done
+fi
+eprint $message
+case $message in
+  "Todos los dispositivos de tu Alarma han sido conectados") state="armed_away";;
+  "Tu Alarma estÃ¡ conectada en modo Parcial dÃ­a") state="armed_home";;
+  "Tu alarma esta conectada en modo parcial noche") state="armed_night";;
+  "Tu Alarma ha sido desconectada") state="disarmed";;
+esac
+if [ -n "$state" ]; then
+  json='{"last_triggered": "'$(date +"%d-%m-%Y %H:%M ")'", "state": "'$state'", "changed_by": "VERISURE WEB" }'
+  print $json
+  exit
+fi
+
+exit -100
