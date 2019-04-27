@@ -8,7 +8,7 @@
 # and take photos (photo_request)
 #
 # This code is under MIT licence by segalion at gmail. Use at your own risk.
-# release 2.0 (03/10/2018)
+# release 2.1 (03/10/2018)
 
 NICK="user@example.com"
 PASSWD="change4yourpasswd"
@@ -16,16 +16,22 @@ PASSWD="change4yourpasswd"
 HOST="https://customers.securitasdirect.es"
 INSTALL="es/installations"
 COOKIE=".securitas.cookie"
-FILEOUT="securitas.log"
+FILEOUT="securitas.state"
+FILELOG="securitas.log"
 CURL="curl -sL -m 10 -c $COOKIE -b $COOKIE"
 between () {
   echo $tmp | grep -o -P '(?<='"$1"').*?(?='"$2"')'
 }
 eprint () {
   echo -en "\r                                      \r$*">&2
+#  log $*
 }
 print () {
   eprint ""; echo -e "$*"
+#  log $*
+}
+log (){
+  echo -en "$(date +'%d)%H:%M:%S'):$*\n" >> $FILELOG
 }
 
 cd "${0%/*}"
@@ -49,6 +55,10 @@ for i in {0..2}; do
   inst=$( between 'Content-Disposition: attachment; filename="file' '.csv"')
   if [ -z "$inst" ]; then
     token=$( between 'authenticity_token" name="csrf-param" /> <meta content="' '" name="csrf-token"' )
+    # token=$(echo $tmp | grep -o -P '(?<=authenticity_token" name="csrf-param" /> <meta content=").*(?=" name="csrf-token")')
+    # inst=$( between 'Nº INST. <strong>' '</strong></span>' )
+    # echo -e "\ninst=$inst\n"
+    #  echo $tmp > securitas.log
     eprint "login.$i"
     sleep $i
     if [ -z "$token" ]; then exit -1;fi
@@ -69,11 +79,11 @@ if [ -z "$option" ]; then
     IFS=';' read -a w <<<$line
     case ${w[1]} in
       Cerrar|Conectado) state="armed_away";;
-      "Armado dÃ­a"|"Cerrar dÃ­a") state="armed_home";;
+      "Armado día"|"Cerrar día") state="armed_home";;
       "Armado noche"|"Cerrar noche") state="armed_night";;
-      "Sabotaje/manipulaciÃ³n"|Alarma) state="triggered";;
+      "Sabotaje/manipulación"|Alarma) state="triggered";;
       Desconectado|Abrir) state="disarmed";;
-      #"Error procesando conexiÃ³n de alarma"|"PeticiÃ³n de foto"|"Comprobacion de estado") state="";;
+      #"Error procesando conexión de alarma"|"Petición de foto"|"Comprobacion de estado") state="";;
     esac
     if [ -n "$state" ]; then
       json='{"last_triggered": "'${w[0]}'", "state": "'$state'", "changed_by": "'${w[4]}${w[5]}'" }'
@@ -81,7 +91,7 @@ if [ -z "$option" ]; then
       break
     fi
   done
-  exit
+  exit 0
 fi
 
 tmp=$($CURL $HOST/$INSTALL/$inst/$option)
@@ -106,17 +116,29 @@ if [ -n "$job_id" ]; then
     if [ -n "$message" ]; then break; fi
   done
 fi
-eprint $message
+eprint "{$message}"
 case $message in
-  "Todos los dispositivos de tu Alarma han sido conectados") state="armed_away";;
-  "Tu Alarma estÃ¡ conectada en modo Parcial dÃ­a") state="armed_home";;
-  "Tu alarma esta conectada en modo parcial noche") state="armed_night";;
-  "Tu Alarma ha sido desconectada") state="disarmed";;
+   "Todos "*" conectados") state="armed_away";;
+   "Tu Alarma "*" modo Parcial d"*) state="armed_home";;
+   "Tu alarma "*" modo parcial n"*) state="armed_night";;
+   "Tu alarma "*" perimetral"*) state="armed_custom_bypass";;
+   *"desconectada"*) state="disarmed";;
+   *" desconecta tu Alarma "*) state="armed_?";; # to force one hipotetical armed state
 esac
+exit_code=-100
 if [ -n "$state" ]; then
   json='{"last_triggered": "'$(date +"%d-%m-%Y %H:%M ")'", "state": "'$state'", "changed_by": "VERISURE WEB" }'
-  print $json
-  exit
+  # print $json
+  log $json
+  print $state
+  exit_code=0
 fi
+exit $exit_code
 
-exit -100
+# Todos los dispositivos de tu Alarma han sido conectados
+# No ha sido posible activar este modo porque tienes otro activado. Por favor, desconecta tu Alarma y repite la operación.
+# Tu Alarma ha sido desconectada
+# Tu Alarma está conectada en modo Parcial día
+# Tu alarma esta conectada en modo parcial noche
+
+# show-photos?notification_id=201618076
