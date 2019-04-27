@@ -1,0 +1,107 @@
+sensor:
+  - platform: command_line
+    name: Securitas
+    command: "/home/homeassistant/bin/securitas"
+    command_timeout: 30
+    json_attributes:
+      - last_triggered
+      - changed_by
+    value_template: '{{ value_json.state }}'
+alarm_control_panel:
+  - platform: manual
+    name: Securitas
+    pending_time: 0
+
+shell_command:
+  securitas: /home/homeassistant/bin/ha_securitas {{command}}
+
+automation:
+
+- alias: Securitas_Set
+  id: '1538744231426'
+  trigger:
+  - entity_id: alarm_control_panel.securitas
+    platform: state
+  condition: []
+  action:
+  - service: xiaomi_aqara.play_ringtone
+    data:
+      gw_mac: 34:CE:00:88:A3:DC
+      ringtone_id: '10016'
+  - service: python_script.set_state
+    data_template:
+      entity_id: sensor.securitas
+      state: 'pending'
+  - service: shell_command.securitas
+    data_template:
+      command: '{{trigger.to_state.state}}'
+
+- alias: Securitas_Refresh
+  id: '1538560913835'
+  trigger:
+  - entity_id: sensor.securitas
+    platform: state
+  - event: start
+    platform: homeassistant
+  condition: []
+  action:
+  - service: automation.turn_off
+    entity_id: automation.securitas_set
+  - service: python_script.set_state
+    data_template:
+      entity_id: alarm_control_panel.securitas
+      state: '{{states.sensor.securitas.state}}'
+  - service: automation.turn_on
+    entity_id: automation.securitas_set
+  - condition: template
+    value_template: '{{ trigger.from_state.state=="pending" }}'
+  - service: xiaomi_aqara.play_ringtone
+    data_template:
+      gw_mac: 34:CE:00:88:A3:DC
+      ringtone_id: '{% if trigger.to_state.state=="disarmed" %}10001{% elif trigger.to_state.state=="armed_home" %}10002{% elif trigger.to_state.state=="armed_
+away" %}10003{% else %}10026{% endif%}'
+
+- alias: Securitas_Button_Hold
+  id: '1539013569728'
+  trigger:
+  - event_data:
+      click_type: hold
+      entity_id: binary_sensor.switch_158d0001e0ee12
+    event_type: click
+    platform: event
+  condition: []
+  action:
+  - service: python_script.set_state
+    data_template:
+      entity_id: alarm_control_panel.securitas
+      state: '{% if states.alarm_control_panel.securitas.state=="armed_away" %}disarmed{% else %}armed_away{% endif %}'
+
+- alias: Securitas_Button_2Clic
+  id: '1539013569729'
+  trigger:
+  - event_data:
+      click_type: double
+      entity_id: binary_sensor.switch_158d0001e0ee12
+    event_type: click
+    platform: event
+  condition: []
+  action:
+  - service: python_script.set_state
+    data_template:
+      entity_id: alarm_control_panel.securitas
+      state: '{% if states.alarm_control_panel.securitas.state=="armed_home" %}disarmed{% else %}armed_home{% endif %}'
+
+- alias: Securitas_Llave1B_Hold
+  id: '1539013569730'
+  trigger:
+  - event_data:
+      click_type: simple
+      entity_id: binary_sensor.wall_switch_both_158d00027c3117
+    event_type: click
+    platform: event
+  condition: []
+  action:
+  - service: python_script.set_state
+    data_template:
+      entity_id: alarm_control_panel.securitas
+      state: '{% if states.alarm_control_panel.securitas.state=="armed_away" %}disarmed{% else %}armed_away{% endif %}'
