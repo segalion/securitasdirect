@@ -1,0 +1,43 @@
+#!/bin/bash
+# This is a command-line tool to interact with securitas script to interact
+# with Verisure Alarm (Spain) and publish result in Home Assistant Sensor.
+#
+# This code is under MIT licence by segalion at gmail. Use at your own risk.
+# release 1.0 (29/10/2018)
+
+HA_SENSOR="sensor.securitas"
+HA_PASSWD="home_assistant_password"
+HA_HOST="http://localhost:8123/api/services/python_script/set_state"
+
+eprint () {
+  echo -en "\r                                      \r$*">&2
+}
+print () {
+  eprint ""; echo -e "$*"
+}
+
+cd "${0%/*}"
+case $1 in
+  armed_away|armed_home|armed_night|disarmed|"") out=$(./securitas "$1") ;;
+  *) eprint "$0 [disarmed|armed_away|armed_home|armed_night]"; exit -1 ;;
+esac
+case $out in
+  armed_away|armed_home|armed_night|disarmed) state=$out ;;
+  armed_?)
+    state=""
+    for i in {1..5}; do
+      case $state in
+        "disarmed") state=$(./securitas "$1");eprint "c1.st=$state" ;;
+        "$1") eprint "c2.st=$state" ;break ;;
+        *) state=$(./securitas "disarmed"); eprint "c3.st=$state" ;;
+      esac
+    done
+    ;;
+  *) print "$out"; exit $?
+esac
+eprint "HA publishing $state"
+ha=$(curl -s -H "x-ha-access: $HA_PASSWD" -H "Content-Type: application/json" \
+  -d "{\"entity_id\": \"$HA_SENSOR\", \"state\": \"$state\"}" $HA_HOST)
+# eprint "$ha"
+print "$state"
+exit 0
