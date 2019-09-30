@@ -67,6 +67,10 @@ Has been tested in Spain. Similar webs has been found in
 - Perú:
 So change country and traslate could be needed. Please report ISSUEs about it. Thanks.
 
+Please. Take into account a new aproximation of same control with mobile api:
+https://github.com/Cebeerre/VerisureAPIClient (thanks Cebeerre for your sharing project....)
+
+
 TODO:
 - Photo requests
 - Enable/disable keys and remotes
