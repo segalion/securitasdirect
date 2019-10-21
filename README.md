@@ -12,15 +12,17 @@ to see all actions:
 `securitas.py username password ?` 
 
 
-TODO:
-- Photo (CAMERA) requests
+##TODO:
 - Create a Home Assistant component
+- Photo (CAMERA) request
 
 
 
 
 
 
+
+##OLD VERSION:
 There are an old bash script command_line tool based on web API (works but its very slow).
 
 1. Download "securitas" script file
