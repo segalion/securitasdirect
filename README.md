@@ -1,7 +1,7 @@
 # securitasdirect
 New Python command_line tool to interact with Securitas Direct (AKA Verisure Spain), based on mobile API (thanks to https://github.com/Cebeerre/VerisureAPIClient great Cebeerre work...)
 
-1. Download "securitas.py" script file (as raw)
+1. Download "[securitas.py](https://github.com/segalion/securitasdirect/raw/master/securitas.py)" script file (as raw)
 2. install proper requirements:
 `pip3 install requests xml2dict`
 3. make it executable 
@@ -25,7 +25,7 @@ to see all actions:
 ##OLD VERSION:
 There are an old bash script command_line tool based on web API (works but its very slow).
 
-1. Download "securitas" script file
+1. Download securitas script file
 2. make it executable (chmod +x securitas)
 3. edit and change NICK and PASSWD (nano securitas)
 4. try execute (./securitas)
