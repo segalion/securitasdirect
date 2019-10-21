@@ -1,5 +1,27 @@
 # securitasdirect
-Bash script command_line tool to interact with Securitas Direct (AKA Verisure Spain).
+New Python command_line tool to interact with Securitas Direct (AKA Verisure Spain), based on mobile API (thanks to https://github.com/Cebeerre/VerisureAPIClient great Cebeerre work...)
+
+1. Download "securitas.py" script file (as raw)
+2. install proper requirements:
+`pip3 install requests xml2dict`
+3. make it executable 
+`chmod +x securitas.py`
+4. run with 
+`securitas.py username password [ACTION]`
+to see all actions:
+`securitas.py username password ?` 
+
+
+TODO:
+- Photo (CAMERA) requests
+- Create a Home Assistant component
+
+
+
+
+
+
+There are an old bash script command_line tool based on web API (works but its very slow).
 
 1. Download "securitas" script file
 2. make it executable (chmod +x securitas)
@@ -67,14 +89,6 @@ Has been tested in Spain. Similar webs has been found in
 - Perú:
 So change country and traslate could be needed. Please report ISSUEs about it. Thanks.
 
-Please. Take into account a new aproximation of same control with mobile api:
-https://github.com/Cebeerre/VerisureAPIClient (thanks Cebeerre for your sharing project....)
-
-
-TODO:
-- Photo requests
-- Enable/disable keys and remotes
-- yaml code to create a Home Assistant component
 
 LICENCE:
 Code is under MIT licence.
