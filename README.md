@@ -8,24 +8,40 @@ New Python command_line tool to interact with Securitas Direct (AKA Verisure Spa
 `chmod +x securitas.py`
 4. run with 
 `securitas.py username password [ACTION]`
-to see all actions:
-`securitas.py username password ?` 
+
+( to see all actions:
+`securitas.py username password ?` )
 
 
 ## TODO:
 - Create a Home Assistant component
 - Photo (CAMERA) request
 
+## NOTES:
+
+This project has no relation with Securitas Direct / Verisure company (unofficial).
+Has been tested in Spain. Similar webs has been found in 
+- France: https://customers.securitasdirect.fr/
+- Italy: https://customers.verisure.it/
+- UK: https://customers.verisure.co.uk/
+- Portugal: https://customers.securitasdirect.pt/
+- Brasil: https://customers.verisure.com.br/
+- Netherland:
+- Chile:
+- Perú:
+So change country and traslate could be needed. Please report ISSUEs about it. Thanks.
 
 
-
-
-
-
-
-
-
-
+## LICENCE:
+Code is under MIT licence.
+ 
+  
+   
+    
+     
+       
+        
+         
 
 ## OLD VERSION:
 There are an old bash script command_line tool based on web API (works but its very slow).
@@ -82,20 +98,3 @@ Its supposed to run on Android with TERMUX, so you can easyly make an automation
 - When connect to mywifi > securitas disarmed
 - When disconnect from mywifi > securitas armed_away
 
-NOTES:
-
-This project has no relation with Securitas Direct / Verisure company (unofficial).
-Has been tested in Spain. Similar webs has been found in 
-- France: https://customers.securitasdirect.fr/
-- Italy: https://customers.verisure.it/
-- UK: https://customers.verisure.co.uk/
-- Portugal: https://customers.securitasdirect.pt/
-- Brasil: https://customers.verisure.com.br/
-- Netherland:
-- Chile:
-- Perú:
-So change country and traslate could be needed. Please report ISSUEs about it. Thanks.
-
-
-LICENCE:
-Code is under MIT licence.
