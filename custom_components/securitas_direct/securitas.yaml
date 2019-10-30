@@ -1,0 +1,8 @@
+# Include this part in your configuration.yaml changing username, password and code.
+# Remember to mark all your controls (remotes and keys) to be tracked, in order to 
+# ensure synchronization between this alarm_control_panel and real securitas alarm
+
+securitas_direct:
+  username: your_securitas_username
+  password: your_securitas_password
+  code: 1234
