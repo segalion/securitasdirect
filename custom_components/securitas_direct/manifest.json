@@ -1,0 +1,13 @@
+{
+  "domain": "securitas_direct",
+  "name": "Securitas Direct",
+  "documentation": "https://github.com/segalion/securitasdirect",
+  "requirements": [
+    "xml2dict"
+  ],
+  "dependencies": [],
+  "codeowners": [
+    "@segalion",
+    "@Cebeerre"
+  ]
+}
