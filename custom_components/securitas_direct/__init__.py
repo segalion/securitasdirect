@@ -85,7 +85,8 @@ class SecuritasHub:
         self.session = securitas.SecuritasAPIClient(
             domain_config[CONF_USERNAME],
             domain_config[CONF_PASSWORD],
-            domain_config[CONF_COUNTRY]
+            country=domain_config[CONF_COUNTRY].upper(),
+            lang=domain_config[CONF_COUNTRY].lower()
         )
 
     def login(self):
