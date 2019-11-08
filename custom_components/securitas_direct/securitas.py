@@ -103,13 +103,15 @@ class SecuritasAPIClient():
             del self._params['hash']
         return res
 
-    def last_state(self):
+    def last_state(self, filter=None):
+        if filter is None:
+            filter = ('1','2','31','32','46','202','311','13','24')
         res = self._api_requests('ACT_V2',timefilter=2,activityfilter=0)
         if self._is_ok(res):
             regs= res['PET']['LIST']['REG']
             # print(json.dumps(regs[0]))
             for reg in regs:
-                if reg['@type'] in ('1','2','31','32','46','202','311'):
+                if reg['@type'] in filter:
                     return reg
 
 if __name__ == '__main__':

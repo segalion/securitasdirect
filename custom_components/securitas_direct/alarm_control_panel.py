@@ -1,4 +1,5 @@
 """Support for Securitas Direct (AKA Verisure EU) alarm control panels."""
+
 import logging, datetime
 from time import sleep
 
@@ -22,11 +23,14 @@ from . import CONF_ALARM, CONF_CODE_DIGITS, CONF_COUNTRY, HUB as hub
 
 _LOGGER = logging.getLogger(__name__)
 
+# some reported by @furetto72@Italy
 SECURITAS_STATUS = {
-    '0': STATE_ALARM_DISARMED,
-    'P': STATE_ALARM_ARMED_HOME,
-    'Q': STATE_ALARM_ARMED_NIGHT,
-    '1': STATE_ALARM_ARMED_AWAY
+    STATE_ALARM_DISARMED: ['0',("1","32")],
+    STATE_ALARM_ARMED_HOME: ['P',("311","202")],
+    STATE_ALARM_ARMED_NIGHT: [('Q','C'),("46",)],
+    STATE_ALARM_ARMED_AWAY: [('1','A'),("2","31")],
+    STATE_ALARM_ARMED_CUSTOM_BYPASS: ['3',('???',)],
+    STATE_ALARM_TRIGGERED: ['???',('13','24')],
 }
 
 def setup_platform(hass, config, add_entities, discovery_info=None):
@@ -61,24 +65,26 @@ class SecuritasAlarm(alarm.AlarmControlPanel):
         self._state = state
         self.hass.states.set(self.entity_id ,state)
 
-    def __set_arm_state(self, state):
+    def __arm_state(self, state):
         res = hub.session.api_call(state)
         _LOGGER.debug("Securitas: setting arm state: %s\nres=%s", state,res)
-        #if hub.session._is_ok(res):
-        #    status = res['PET']['STATUS']
-        #    if status in SECURITAS_STATUS:
-        #        self.__force_state(SECURITAS_STATUS[status])
         return res
+
+    def get_arm_state(self):
+        res = self.__arm_state('EST')
+        if hub.session._is_ok(res):
+            for k,v in SECURITAS_STATUS.items():
+                if res['PET']['STATUS'] in v[0]: return k
 
     def set_arm_state(self, state, attempts=3):
         """Send set arm state command."""
         for i in range(attempts):
-            res = self.__set_arm_state(state)
+            res = self.__arm_state(state)
             if hub.session._is_ok(res):
                 break
             else:
                 _LOGGER.warning("Securitas: disarming (res=%s)", res)
-                self.__set_arm_state('DARM')
+                self.__arm_state('DARM')
                 sleep(i*2+1)
         sleep(2)
         hub.update_overview(no_throttle=True)
@@ -109,26 +115,23 @@ class SecuritasAlarm(alarm.AlarmControlPanel):
         return self._changed_by
 
     def update(self):
-        """Update alarm status."""
+        """Update alarm status, from last alarm setting register or EST"""
         hub.update_overview()
-
         status = hub.overview
-        if status['@type'] in ("1","32"):
-            self._state = STATE_ALARM_DISARMED
-        elif status['@type'] in ("311","202"):
-            self._state = STATE_ALARM_ARMED_HOME
-        elif status['@type']=="46":
-            self._state = STATE_ALARM_ARMED_NIGHT
-        elif status['@type'] in ("2","31"):
-            self._state = STATE_ALARM_ARMED_AWAY
-        elif status != "PENDING":
-            _LOGGER.error("Unknown alarm state %s", status)
-        self._changed_by = ( status['@user'] if '@user' in status
-                else status['@myverisureUser'] if '@myverisureUser' in status
-                else "" ) + "@" + status['@source']
-        self._device = status['@device']
-        self._time = datetime.datetime.strptime(status['@time'],'%y%m%d%H%M%S')
-        self._message = status['@alias']
+        try:
+            for k,v in SECURITAS_STATUS.items():
+                if status['@type'] in v[1]:
+                    self._state = k
+                    self._changed_by = ( status['@user'] if '@user' in status
+                        else status['@myverisureUser'] if '@myverisureUser' in status
+                        else "" ) + "@" + status['@source']
+                    self._device = status['@device']
+                    self._time = datetime.datetime.strptime(status['@time'],'%y%m%d%H%M%S')
+                    self._message = status['@alias']
+                    break
+        except (KeyError, TypeError):
+            if self._state is None:
+                self._state = self.get_arm_state()
 
     @property
     def device_state_attributes(self):
@@ -165,4 +168,3 @@ class SecuritasAlarm(alarm.AlarmControlPanel):
         """Send arm perimeter command."""
         self.__force_state(STATE_ALARM_ARMING)
         self.set_arm_state("PERI")
-

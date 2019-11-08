@@ -51,7 +51,6 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-
 def setup(hass, config):
     """Set up the Securitas component."""
     global HUB
@@ -63,7 +62,6 @@ def setup(hass, config):
         return False
     hass.bus.listen_once(EVENT_HOMEASSISTANT_STOP, lambda event: HUB.logout())
     HUB.update_overview()
-
     for component in (
         "alarm_control_panel",
     ):
@@ -77,21 +75,20 @@ class SecuritasHub:
     def __init__(self, domain_config):
         """Initialize the Securitas hub."""
         self.overview = {}
-
         self.config = domain_config
-
         self._lock = threading.Lock()
-
+        country = domain_config[CONF_COUNTRY].upper()
+        lang = country.lower() if country != 'UK' else 'en'
         self.session = securitas.SecuritasAPIClient(
             domain_config[CONF_USERNAME],
             domain_config[CONF_PASSWORD],
-            country=domain_config[CONF_COUNTRY].upper(),
-            lang=domain_config[CONF_COUNTRY].lower()
+            country=country, lang=lang
         )
 
     def login(self):
         """Login to Securitas."""
         ret = self.session.login()
+        _LOGGER.debug("Log in Securitas: %s", ret)
         if not ret:
             _LOGGER.error("Could not log in to Securitas: %s", ret)
             return False
@@ -108,4 +105,3 @@ class SecuritasHub:
     def update_overview(self):
         """Update the overview."""
         self.overview = self.session.last_state()
-
