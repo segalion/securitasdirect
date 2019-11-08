@@ -34,6 +34,9 @@ There are an [old cli bash version](https://github.com/segalion/securitasdirect/
 ## NOTES:
 
 This project has no relationship with Securitas Direct / Verisure company (unofficial).
+
+Please, take into account that company could charge for this access. The component is designed to make as less as request as possible, emulating the mobile access. 
+
 Has been tested in Spain. Similar webs has been found in 
 - France: https://customers.securitasdirect.fr/
 - Italy: https://customers.verisure.it/
@@ -43,7 +46,9 @@ Has been tested in Spain. Similar webs has been found in
 - Netherland:
 - Chile:
 - Perú:
-So change country and traslate could be needed. Please report ISSUEs about it. Thanks.
+Please report ISSUEs about it, and working countries [in issue 8](https://github.com/segalion/securitasdirect/issues/8)
+
+Thanks.
 
 ## LICENCE:
 Code is under MIT licence.   
