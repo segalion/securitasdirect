@@ -2,6 +2,7 @@
 
 
 New Home Assistant custom component to interact with Securitas Direct (AKA Verisure EU), based on mobile API (thanks to https://github.com/Cebeerre/VerisureAPIClient great Cebeerre work...)
+
 <img src="https://github.com/segalion/securitasdirect/raw/master/securitas_HA.gif">
 
 ## Install
