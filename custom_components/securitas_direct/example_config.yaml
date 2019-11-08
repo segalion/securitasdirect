@@ -7,3 +7,8 @@ securitas_direct:
   password: your_securitas_password
   code: 1234
   country: ES
+  
+# remove '#' to enable debug for this component (to see logs: 'tail -f homeassistant.log') 
+#logger:
+#  logs:
+#    custom_components.securitas_direct: debug
