@@ -46,7 +46,9 @@ Has been tested in Spain. Similar webs has been found in
 - Netherland:
 - Chile:
 - Perú:
-Please report ISSUEs about it, and working countries [in issue 8](https://github.com/segalion/securitasdirect/issues/8)
+
+Please report ISSUEs about it, 
+and working countries [in issue 8](https://github.com/segalion/securitasdirect/issues/8)
 
 Thanks.
 
