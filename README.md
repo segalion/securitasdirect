@@ -9,6 +9,9 @@ New Home Assistant custom component to interact with Securitas Direct (AKA Veris
 4. Enable track of all your remotes and keys (on mobile app), to get good sync between real Securitas Alarm and the HA alarm component. 
 5. restart Home Assistant and search for unused entities. You will see the alarm pannel with code.
 
+<img src="https://github.com/segalion/securitasdirect/raw/master/securitas_HA.gif">
+
+
 You can use the python command_line tool to interact with Securitas Direct (Verisure EU), withot any Home Assistant...
 
 1. Download "[securitas.py](https://github.com/segalion/securitasdirect/raw/master/custom_components/securitas_direct/securitas.py)" script file
