@@ -6,8 +6,8 @@ New Home Assistant custom component to interact with Securitas Direct (AKA Veris
 1. Download [securitasdirect zip project](https://github.com/segalion/securitasdirect/archive/master.zip)
 2. unzip and just copy 'custom_components' folder inside Home Assistant config folder
 3. configure your configuration.yaml with proper securitas_direct/verisure parameters (as [example_config.yaml](https://github.com/segalion/securitasdirect/blob/master/custom_components/securitas_direct/example_config.yaml) 
-3. restar HA and search for unused entities
-
+4. Enable track of all your remotes and keys (on mobile app), to get good sync between real Securitas Alarm and the HA alarm component. 
+5. restart Home Assistant and search for unused entities. You will see the alarm pannel with code.
 
 You can use the python command_line tool to interact with Securitas Direct (Verisure EU), withot any Home Assistant...
 
@@ -24,7 +24,6 @@ You can use the python command_line tool to interact with Securitas Direct (Veri
 
 
 ## TODO:
-- Create a Home Assistant component
 - Photo (CAMERA) request
 
 ## NOTES:
