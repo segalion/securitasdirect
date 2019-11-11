@@ -10,7 +10,7 @@ New Home Assistant custom component to interact with Securitas Direct (AKA Veris
 2. unzip and just copy 'custom_components' folder inside Home Assistant config folder
 3. configure your configuration.yaml with proper securitas_direct/verisure parameters (as [example_config.yaml](https://github.com/segalion/securitasdirect/blob/master/custom_components/securitas_direct/example_config.yaml) 
 4. Enable track of all your remotes and keys (on mobile app), to get good sync between real Securitas Alarm and the HA alarm component. 
-5. restart Home Assistant and search for unused entities. You will see the alarm pannel with code.
+5. restart Home Assistant and search for unused entities. Include it in lovelace frontend (following [documentation](https://www.home-assistant.io/lovelace/alarm-panel/).
 
 ## Standalone
 You can use the python command_line tool to interact with Securitas Direct (Verisure EU), withot need Home Assistant (i.e. integrate on other assistants):
