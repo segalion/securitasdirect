@@ -29,7 +29,7 @@ SECURITAS_STATUS = {
     STATE_ALARM_ARMED_HOME: ['P',("311","202")],
     STATE_ALARM_ARMED_NIGHT: [('Q','C'),("46",)],
     STATE_ALARM_ARMED_AWAY: [('1','A'),("2","31")],
-    STATE_ALARM_ARMED_CUSTOM_BYPASS: ['3',('???',)],
+    STATE_ALARM_ARMED_CUSTOM_BYPASS: ['3',('204',)],
     STATE_ALARM_TRIGGERED: ['???',('13','24')],
 }
 
