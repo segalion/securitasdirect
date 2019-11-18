@@ -105,7 +105,7 @@ class SecuritasAPIClient():
 
     def last_state(self, filter=None):
         if filter is None:
-            filter = ('1','2','31','32','46','202','311','13','24')
+            filter = ('1','2','31','32','46','202','311','13','24','204')
         res = self._api_requests('ACT_V2',timefilter=2,activityfilter=0)
         if self._is_ok(res):
             regs= res['PET']['LIST']['REG']
