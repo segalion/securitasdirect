@@ -17,6 +17,11 @@ from homeassistant.const import (
     STATE_ALARM_DISARMING,
 )
 
+from homeassistant.components.alarm_control_panel.const import (
+    SUPPORT_ALARM_ARM_AWAY,
+    SUPPORT_ALARM_ARM_HOME,
+    SUPPORT_ALARM_ARM_NIGHT,
+)
 
 from . import CONF_ALARM, CONF_CODE_DIGITS, CONF_COUNTRY, HUB as hub
 # from securitas import SecuritasAPIClient
@@ -168,3 +173,9 @@ class SecuritasAlarm(alarm.AlarmControlPanel):
         """Send arm perimeter command."""
         self.__force_state(STATE_ALARM_ARMING)
         self.set_arm_state("PERI")
+
+    @property
+    def supported_features(self) -> int:
+        """Return the list of supported features."""
+        return SUPPORT_ALARM_ARM_HOME | SUPPORT_ALARM_ARM_AWAY | SUPPORT_ALARM_ARM_NIGHT
+        
