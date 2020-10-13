@@ -88,7 +88,7 @@ class SecuritasAPIClient():
     def login(self):
         self._params['request'] = "LOGIN"
         self._set_id()
-        resp = requests.post(self.BASE_URL, params=self._params, timeout=5)
+        resp = requests.post(self.BASE_URL, params=self._params, timeout=10)
         if resp.status_code == 200:
             res = xmltodict.parse(resp.text)
             if self._is_ok(res):
