@@ -3,5 +3,5 @@
   "country": ["ES", "FR", "IT", "BR", "PT", "CL", "NL","GB"],
   "domains": ["alarm_control_panel"],
   "homeassistant": "0.78.3",
-  "render_readme": True
+  "render_readme": true
 }
