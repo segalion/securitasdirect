@@ -47,16 +47,8 @@ The component emulate the access for this "My Verisure" mobile app.
 <img src="https://lh3.googleusercontent.com/MnZWWDdoqVZ69NBTe2YVE5soAxtRIqaEkFazk9wm2Jp2RiJ3eCxzGFBjKxil6RZTPAY=w1291-h663" alt="drawing" width="100"/> 
 You have to ensure you can manage your alarm with this app before configure this component in Home Assistant. Even it is designed to make as less as request as possible, please, take into account that company could charge for this access.
 
-Has been tested in Spain. Similar webs has been found in 
-- France: https://customers.securitasdirect.fr/
-- Italy: https://customers.verisure.it/
-- UK: https://customers.verisure.co.uk/
-- Portugal: https://customers.securitasdirect.pt/
-- Brasil: https://customers.verisure.com.br/
-- Netherland: 
-- Chile:
-- Perú:
-
+Has been tested in Spain, but its supposed to work in [other countries](https://www.verisure.co.uk/company/our-group): Sweden, Norway, Denmark, Finland, Belgium, Netherlands, UK, France, Portugal, Italy, Chile, Brazil, Peru, Argentina and Germany.
+It doesnt work with Verisure USA, that has an official component in HA.
 
 You can report ISSUEs about it, and working countries [in issue 8](https://github.com/segalion/securitasdirect/issues/8)
 
