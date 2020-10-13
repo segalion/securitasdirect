@@ -5,7 +5,7 @@
 #       posted in github.com/Cebeerre/VerisureAPIClient )
 # (by segalion at gmail, 20/10/2019)
 
-import time, datetime, requests, json, xmltodict, sys
+import time, datetime, requests, json, xmltodict, sys, logging
 
 # All actions based on post:
 # https://community.home-assistant.io/t/securitas-direct-verisure-spain/70239/15
@@ -36,6 +36,8 @@ SC_ALL = SC_ALARM + SC_WORK + SC_DOMO + ('IMG','CAMLOG','CAMS','VIDS','VID','UPD
         ,'PAYMENTDATA','PAYMENTEMAIL'
         )
 
+_LOGGER = logging.getLogger(__name__)
+
 class SecuritasAPIClient():
     BASE_URL='https://mob2217.securitasdirect.es:12010/WebService/ws.do'
     requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
@@ -59,6 +61,7 @@ class SecuritasAPIClient():
         if 'ID' not in more: self._set_id()
         resp = requests.get(self.BASE_URL, params={**self._params, **more}
                 , timeout=5)
+        _LOGGER.debug(resp.text)
         if resp.status_code == 200:
             return xmltodict.parse(resp.text)
         print(resp, file=sys.stderr)
@@ -108,11 +111,16 @@ class SecuritasAPIClient():
             filter = ('1','2','31','32','46','202','311','13','24','204')
         res = self._api_requests('ACT_V2',timefilter=5,activityfilter=0)
         if self._is_ok(res):
-            regs= res['PET']['LIST']['REG']
-            # print(json.dumps(regs[0]))
-            for reg in regs:
-                if reg['@type'] in filter:
-                    return reg
+            try:
+                regs= res['PET']['LIST']['REG']
+            except KeyError:
+                _LOGGER.debug(res)
+                pass
+            else:            
+			    # print(json.dumps(regs[0]))
+                for reg in regs:
+                    if reg['@type'] in filter:
+                        return reg
 
 if __name__ == '__main__':
     args=sys.argv[1:]
