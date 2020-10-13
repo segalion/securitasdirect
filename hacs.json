@@ -1,7 +1,7 @@
 {
   "name": "Securitas direct (AKA Verisure EU)",
-  "country": ["ES", "FR", "IT", "BR", "PT", "CL", "NL"]
+  "country": ["ES", "FR", "IT", "BR", "PT", "CL", "NL","GB"],
   "domains": ["alarm_control_panel"],
-  "homeassistant": "0.90",
-  "render_readme", True
+  "homeassistant": "0.78.3",
+  "render_readme": True
 }
