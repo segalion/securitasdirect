@@ -2,6 +2,7 @@
   "domain": "securitas_direct",
   "name": "Securitas Direct",
   "documentation": "https://github.com/segalion/securitasdirect",
+  "issue_tracker": "https://github.com/segalion/securitasdirect/issues",
   "requirements": [
     "xml2dict"
   ],
