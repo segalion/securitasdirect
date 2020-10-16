@@ -54,7 +54,7 @@ def set_arm_state(state, code=None):
     # sleep(2)
     # hub.update_overview(no_throttle=True)
 
-class SecuritasAlarm(alarm.AlarmControlPanel):
+class SecuritasAlarm(alarm.AlarmControlPanelEntity):
     """Representation of a Securitas alarm status."""
 
     def __init__(self):
