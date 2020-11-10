@@ -27,8 +27,8 @@ CONF_COUNTRY = "country"
 
 DOMAIN = "securitas_direct"
 
-MIN_SCAN_INTERVAL = timedelta(minutes=1)
-DEFAULT_SCAN_INTERVAL = timedelta(minutes=1)
+MIN_SCAN_INTERVAL = timedelta(seconds=20)
+DEFAULT_SCAN_INTERVAL = timedelta(seconds=40)
 
 HUB = None
 
@@ -92,6 +92,7 @@ class SecuritasHub:
         if not ret:
             _LOGGER.error("Could not log in to Securitas: %s", ret)
             return False
+        ret = self.session.get_ins()
         return True
 
     def logout(self):
