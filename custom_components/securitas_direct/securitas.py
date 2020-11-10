@@ -192,13 +192,16 @@ class SecuritasAPIClient():
         if filter == 'states':
             filter = ('1', '2', '31', '32', '46', '202', '311', '13', '24')
         res = self.api_request('ACT_V2', timefilter=2, activityfilter=0)
-        # _LOGGER.debug(res)
-        if self._validate(res, 'PET', 'LIST', 'REG') == "OK":
-            regs = res['PET']['LIST']['REG']
-            # print(json.dumps(regs[0]))
-            for reg in regs:
-                if filter is None or reg['@type'] in filter:
-                    return reg
+        _LOGGER.debug(res)
+        try:
+            if self._validate(res, 'PET', 'LIST', 'REG') == "OK":
+                regs = res['PET']['LIST']['REG']
+                # print(json.dumps(regs[0]))
+                for reg in regs:
+                    if filter is None or reg['@type'] in filter:
+                        return reg
+        except (KeyError, TypeError):
+            return
 
 
 if __name__ == '__main__':
