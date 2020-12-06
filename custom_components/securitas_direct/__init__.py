@@ -1,6 +1,5 @@
 """Support for Securitas Direct alarms."""
 import logging
-import threading
 from datetime import timedelta
 
 import voluptuous as vol
@@ -15,15 +14,17 @@ from homeassistant.const import (
 from homeassistant.helpers import discovery
 from homeassistant.util import Throttle
 import homeassistant.helpers.config_validation as cv
-
-
-from . import securitas
+from pysecuritas.core.session import Session
+from pysecuritas.api.installation import Installation
+from pysecuritas.api.alarm import Alarm
 
 _LOGGER = logging.getLogger(__name__)
 
 CONF_ALARM = "alarm"
 CONF_CODE_DIGITS = "code_digits"
 CONF_COUNTRY = "country"
+CONF_LANG = "lang"
+CONF_INSTALLATION = "installation"
 
 DOMAIN = "securitas_direct"
 
@@ -38,7 +39,9 @@ CONFIG_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_PASSWORD): cv.string,
                 vol.Required(CONF_USERNAME): cv.string,
-                vol.Optional(CONF_COUNTRY,default="ES"): cv.string,
+                vol.Required(CONF_INSTALLATION): cv.positive_int,
+                vol.Optional(CONF_COUNTRY, default="ES"): cv.string,
+                vol.Optional(CONF_LANG, default="es"): cv.string,
                 vol.Optional(CONF_ALARM, default=True): cv.boolean,
                 vol.Optional(CONF_CODE_DIGITS, default=4): cv.positive_int,
                 vol.Optional(CONF_CODE, default=""): cv.string,
@@ -50,6 +53,7 @@ CONFIG_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA,
 )
+
 
 def setup(hass, config):
     """Set up the Securitas component."""
@@ -76,33 +80,36 @@ class SecuritasHub:
         """Initialize the Securitas hub."""
         self.overview = {}
         self.config = domain_config
-        self._lock = threading.Lock()
-        country = domain_config[CONF_COUNTRY].upper()
-        lang = country.lower() if country != 'UK' else 'en'
-        self.session = securitas.SecuritasAPIClient(
-            domain_config[CONF_USERNAME],
-            domain_config[CONF_PASSWORD],
-            country=country, lang=lang
-        )
+        self.session = Session(domain_config[CONF_USERNAME], domain_config[CONF_PASSWORD],
+                               domain_config[CONF_INSTALLATION],
+                               domain_config[CONF_COUNTRY].upper(), domain_config[CONF_LANG].lower())
+        self.installation = Installation(self.session)
+        self.alarm = Alarm(self.session)
 
     def login(self):
         """Login to Securitas."""
-        ret = self.session.login()
-        _LOGGER.debug("Log in Securitas: %s", ret)
-        if not ret:
-            _LOGGER.error("Could not log in to Securitas: %s", ret)
-            return False
-        ret = self.session.get_ins()
-        return True
+        self.session.connect()
+
+        return self.session.is_connected()
 
     def logout(self):
         """Logout from Securitas."""
-        ret = self.session.logout()
-        if not ret:
-            _LOGGER.error("Could not log out from Securitas: %s", ret)
-            return False
+        self.session.close()
+
         return True
 
     def update_overview(self):
         """Update the overview."""
-        self.overview = self.session.last_state()
+
+        filter = ('1', '2', '31', '32', '46', '202', '311', '13', '24')
+        res = self.installation.get_activity_log()
+        _LOGGER.debug(res)
+        try:
+            regs = res['LIST']['REG']
+            for reg in regs:
+                if filter is None or reg['@type'] in filter:
+                    self.overview = reg
+
+                    return
+        except (KeyError, TypeError):
+            pass

@@ -1,12 +1,10 @@
 {
   "domain": "securitas_direct",
   "name": "Securitas Direct",
-  "documentation": "https://github.com/segalion/securitasdirect",
-  "issue_tracker": "https://github.com/segalion/securitasdirect/issues",
+  "documentation": "https://www.home-assistant.io/integrations/securitas_direct",
   "requirements": [
-    "xml2dict"
+    "pysecuritas==0.1.3"
   ],
-  "dependencies": [],
   "codeowners": [
     "@segalion",
     "@Cebeerre"

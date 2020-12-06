@@ -5,9 +5,11 @@
 securitas_direct:
   username: your_securitas_username
   password: your_securitas_password
+  installation: your_securitas_installation
   code: 1234
   country: ES
-  
+  lang: es
+
 # remove '#' to enable debug for this component (to see logs: 'tail -f homeassistant.log') 
 #logger:
 #  logs:

@@ -1,9 +1,14 @@
 """Support for Securitas Direct (AKA Verisure EU) alarm control panels."""
 
-import logging, datetime
-from time import sleep
+import datetime
+import logging
 
 import homeassistant.components.alarm_control_panel as alarm
+from homeassistant.components.alarm_control_panel.const import (
+    SUPPORT_ALARM_ARM_AWAY,
+    SUPPORT_ALARM_ARM_HOME,
+    SUPPORT_ALARM_ARM_NIGHT,
+)
 from homeassistant.const import (
     CONF_CODE,
     STATE_ALARM_ARMED_AWAY,
@@ -11,23 +16,16 @@ from homeassistant.const import (
     STATE_ALARM_DISARMED,
     STATE_ALARM_ARMED_NIGHT,
     STATE_ALARM_ARMED_CUSTOM_BYPASS,
-    STATE_ALARM_PENDING,
     STATE_ALARM_TRIGGERED,
     STATE_ALARM_ARMING,
     STATE_ALARM_DISARMING,
-#    STATE_UNAVAILABLE,
-#    STATE_UNKNOWN,
+    #    STATE_UNAVAILABLE,
+    #    STATE_UNKNOWN,
     STATE_ALARM_PENDING,
 )
 
-from homeassistant.components.alarm_control_panel.const import (
-    SUPPORT_ALARM_ARM_AWAY,
-    SUPPORT_ALARM_ARM_HOME,
-    SUPPORT_ALARM_ARM_NIGHT,
-)
+from . import CONF_ALARM, CONF_CODE_DIGITS, HUB as hub
 
-from . import CONF_ALARM, CONF_CODE_DIGITS, CONF_COUNTRY, HUB as hub
-# from securitas import SecuritasAPIClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,14 +49,6 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     add_entities(alarms)
 
 
-def set_arm_state(state, code=None):
-    """Send set arm state command."""
-    # hub.session.api_call(state)
-    _LOGGER.error("Securitas: esternal set arm state %s", state)
-    # sleep(2)
-    # hub.update_overview(no_throttle=True)
-
-
 class SecuritasAlarm(alarm.AlarmControlPanelEntity):
     """Representation of a Securitas alarm status."""
 
@@ -75,35 +65,11 @@ class SecuritasAlarm(alarm.AlarmControlPanelEntity):
         self._state = state
         self.hass.states.set(self.entity_id, state)
 
-    def __arm_state(self, state):
-        res = hub.session.api_call(state)
-        _LOGGER.debug("Securitas: setting arm state: %s\nres=%s", state, res)
-        return res
-
     def get_arm_state(self):
-        res = self.__arm_state('EST')
-        if hub.session._is_ok(res):
-            for k, v in SECURITAS_STATUS.items():
-                if res['PET']['STATUS'] in v[0]:
-                    return k
-
-    def set_arm_state(self, state, attempts=3):
-        """Send set arm state command."""
-        for i in range(attempts):
-            res = self.__arm_state(state)
-            if hub.session._is_ok(res):
-                break
-            else:
-                _LOGGER.warning("Securitas: disarming (res=%s)", res)
-                self.__arm_state('DARM')
-                sleep(i*2+1)
-        sleep(2)
-        hub.update_overview(no_throttle=True)
-
-    @property
-    def name(self):
-        """Return the name of the device."""
-        return "securitas_{}".format(hub.session._params['numinst'])
+        res = hub.alarm.get_status()
+        for k, v in SECURITAS_STATUS.items():
+            if res["STATUS"] in v[0]:
+                return k
 
     @property
     def state(self):
@@ -154,7 +120,6 @@ class SecuritasAlarm(alarm.AlarmControlPanelEntity):
         return {'device': self._device,
                 'time': self._time,
                 'message': self._message,
-                'alias': hub.session.alias
                 }
 
     def alarm_disarm(self, code=None):
@@ -162,27 +127,32 @@ class SecuritasAlarm(alarm.AlarmControlPanelEntity):
         if (hub.config.get(CONF_CODE, "") == "" or
                 hub.config.get(CONF_CODE, "") == code):
             self.__force_state(STATE_ALARM_DISARMING)
-            self.set_arm_state("DARM")
+            hub.alarm.disconnect()
+            hub.update_overview(no_throttle=True)
 
     def alarm_arm_home(self, code=None):
         """Send arm home command."""
         self.__force_state(STATE_ALARM_ARMING)
-        self.set_arm_state("ARMDAY")
+        hub.alarm.activate_day_mode()
+        hub.update_overview(no_throttle=True)
 
     def alarm_arm_away(self, code=None):
         """Send arm away command."""
         self.__force_state(STATE_ALARM_ARMING)
-        self.set_arm_state("ARM")
+        hub.alarm.activate_total_mode()
+        hub.update_overview(no_throttle=True)
 
     def alarm_arm_night(self, code=None):
         """Send arm home command."""
         self.__force_state(STATE_ALARM_ARMING)
-        self.set_arm_state("ARMNIGHT")
+        hub.alarm.activate_night_mode()
+        hub.update_overview(no_throttle=True)
 
     def alarm_arm_custom_bypass(self, code=None):
         """Send arm perimeter command."""
         self.__force_state(STATE_ALARM_ARMING)
-        self.set_arm_state("PERI")
+        hub.alarm.activate_perimeter_mode()
+        hub.update_overview(no_throttle=True)
 
     @property
     def supported_features(self) -> int:
