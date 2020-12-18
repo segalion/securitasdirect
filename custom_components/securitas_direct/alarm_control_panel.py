@@ -72,6 +72,11 @@ class SecuritasAlarm(alarm.AlarmControlPanelEntity):
                 return k
 
     @property
+    def name(self):
+        """Return the name of the device."""
+        return "securitas_{}".format(hub.installation_alias or hub.installation_num)
+
+    @property
     def state(self):
         """Return the state of the device."""
         return self._state
@@ -120,6 +125,7 @@ class SecuritasAlarm(alarm.AlarmControlPanelEntity):
         return {'device': self._device,
                 'time': self._time,
                 'message': self._message,
+                'alias': hub.installation_alias
                 }
 
     def alarm_disarm(self, code=None):

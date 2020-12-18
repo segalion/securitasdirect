@@ -3,7 +3,7 @@
   "name": "Securitas Direct",
   "documentation": "https://www.home-assistant.io/integrations/securitas_direct",
   "requirements": [
-    "pysecuritas==0.1.3"
+    "pysecuritas==0.1.4"
   ],
   "codeowners": [
     "@segalion",

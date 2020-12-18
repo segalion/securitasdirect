@@ -85,10 +85,13 @@ class SecuritasHub:
                                domain_config[CONF_COUNTRY].upper(), domain_config[CONF_LANG].lower())
         self.installation = Installation(self.session)
         self.alarm = Alarm(self.session)
+        self.installation_num = domain_config[CONF_INSTALLATION]
+        self.installation_alias = None
 
     def login(self):
         """Login to Securitas."""
         self.session.connect()
+        self.installation_alias = self.installation.get_alias()
 
         return self.session.is_connected()
 
