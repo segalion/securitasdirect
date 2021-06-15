@@ -1,5 +1,6 @@
 {
   "domain": "securitas_direct",
+  "version": "1.0",
   "name": "Securitas Direct",
   "documentation": "https://github.com/segalion/securitasdirect",
   "issue_tracker": "https://github.com/segalion/securitasdirect/issues",
