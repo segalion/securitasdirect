@@ -3,8 +3,8 @@
 # ensure synchronization between this alarm_control_panel and real securitas alarm
 
 securitas_direct:
-  username: your_securitas_username
-  password: your_securitas_password
+  username: Booking@littlerocklake.com
+  password: Abbekas7172@
   code: 1234
   country: ES
   
